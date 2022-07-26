@@ -1,0 +1,16 @@
+# rssget default configuration file
+
+# RSS item display ordering. Order by "date" or by "channel".
+display_by: date
+
+# channels to retrieve
+channels:
+  - url: "example.com/rss"
+    # Output configuration for Items of a Channel (default: all false)
+    item_config:
+      hide_title: true
+      hide_link: true
+      hide_description: true
+      hide_author: true
+      hide_pub_date: true
+  - url: test_url2
