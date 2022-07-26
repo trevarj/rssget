@@ -1,4 +1,6 @@
 # rssget
+![Crates.io](https://img.shields.io/crates/v/rssget?style=flat-square)
+
 A simple tool to read RSS from the terminal. Load it up with feeds and waste all your time!
 
 ## Install
