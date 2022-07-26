@@ -9,7 +9,7 @@ cargo install rssget
 ```
 
 ## Configuration
-You can configure `rssget` by copying [`config.yaml`](./config.yaml) to `~/.config/rssget/config.yaml`. or by using the command line args.
+You can configure `rssget` by copying [`config.yaml`](./config.yaml) to `~/.config/rssget/config.yaml` or by using the command line args.
 
 ## Usage
 

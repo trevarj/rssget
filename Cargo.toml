@@ -5,6 +5,8 @@ version = "0.1.0"
 edition = "2021"
 description = "A tool to get RSS feeds"
 keywords = ["rss", "cli", "util"]
+license = "GPL3"
+repository = "https://github.com/trevarj/rssget"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
