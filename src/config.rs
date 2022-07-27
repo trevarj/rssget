@@ -62,6 +62,8 @@ impl FromStr for Order {
 #[derive(Debug, Deserialize)]
 pub struct ChanConfig {
     pub url: String,
+    #[serde(default)]
+    pub max_items: Option<usize>,
     pub item_config: Option<ItemConfig>,
 }
 
@@ -71,6 +73,7 @@ impl FromStr for ChanConfig {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(ChanConfig {
             url: s.to_owned(),
+            max_items: None,
             item_config: Some(Default::default()),
         })
     }

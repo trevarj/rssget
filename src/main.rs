@@ -115,6 +115,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Ok(chan) => chan
                     .items
                     .into_iter()
+                    .take(conf.max_items.unwrap_or(usize::MAX))
                     .map(|item| {
                         DisplayItem::new(item, &chan.title, &conf.item_config.unwrap_or_default())
                     })
