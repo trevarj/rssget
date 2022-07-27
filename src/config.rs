@@ -79,7 +79,7 @@ impl FromStr for ChanConfig {
     }
 }
 
-/// Toggles for hiding Item fields
+/// Toggles for displaying Item fields
 #[derive(Debug, Default, Deserialize, Clone, Copy)]
 pub struct ItemConfig {
     #[serde(default)]
@@ -92,4 +92,6 @@ pub struct ItemConfig {
     pub hide_author: bool,
     #[serde(default)]
     pub hide_pub_date: bool,
+    #[serde(default)]
+    pub show_enclosure: bool,
 }

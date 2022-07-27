@@ -36,6 +36,8 @@ struct DisplayItem {
     pub author: Option<String>,
     /// The date the item was published as an RFC 2822 timestamp.
     pub pub_date: Option<DateTime<FixedOffset>>,
+    /// The description of a media object that is attached to the item.
+    pub enclosure_url: Option<String>,
 }
 
 impl DisplayItem {
@@ -51,6 +53,7 @@ impl DisplayItem {
             pub_date: item
                 .pub_date
                 .and_then(|d| DateTime::<FixedOffset>::parse_from_rfc2822(&d).ok()),
+            enclosure_url: item.enclosure.map(|e| e.url),
         }
     }
 
@@ -69,6 +72,9 @@ impl DisplayItem {
         }
         if let Some(desc) = &self.description && !self.conf.hide_description {
             writeln!(out, "{}", textwrap::fill(desc, &*WRAP_OPTIONS))?;
+        }
+        if let Some(enclosure_url) = &self.enclosure_url && self.conf.show_enclosure {
+            writeln!(out, "[{}]", enclosure_url)?;
         }
         if let Some(link) = &self.link && !self.conf.hide_link {
             write!(out, "[{}]", link)?;

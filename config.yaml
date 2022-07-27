@@ -8,11 +8,12 @@ channels:
   - url: "example.com/rss"
     # (optional) max max number of items to show
     max_items: 10
-    # (optional) output configuration for Items of a Channel (default: all false)
+    # (optional) display configuration for Items of a Channel (default: all false)
     item_config:
-      hide_title: true
-      hide_link: true
-      hide_description: true
-      hide_author: true
-      hide_pub_date: true
+      hide_title: false
+      hide_link: false
+      hide_description: false
+      hide_author: false
+      hide_pub_date: false
+      show_enclosure: false
   - url: "otherexample.com/rss"
