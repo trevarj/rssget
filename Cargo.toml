@@ -13,9 +13,10 @@ repository = "https://github.com/trevarj/rssget"
 [dependencies]
 argh = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
+colored = "2.0"
 dirs = "4.0"
-rss = { version = "2.0", default-features = false, features = [] }
+rss = { version = "2.0", default-features = false }
 serde = { version = "1", features = ["derive"] }
-serde_yaml = "0.8"
-textwrap = "0.15"
+serde_yaml = "0.9"
+textwrap = { version = "0.15", features = ["terminal_size"] }
 ureq = "2.5"

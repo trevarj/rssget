@@ -14,8 +14,10 @@ use crate::config::{Config, ItemConfig, Order};
 
 mod config;
 
+const MAX_WIDTH: usize = 80;
+
 static WRAP_OPTIONS: LazyLock<Options> = LazyLock::new(|| {
-    Options::new(80)
+    Options::new(MAX_WIDTH)
         .initial_indent("     ")
         .subsequent_indent("     ")
 });
@@ -59,25 +61,33 @@ impl DisplayItem {
 
     /// Build formatted RSS Item
     pub fn format(&self) -> Result<String, std::fmt::Error> {
+        use colored::*;
         let mut out = String::new();
+        // Datetime
         if let Some(pub_date) = self.pub_date && !self.conf.hide_pub_date {
-            write!(out, "[{}] - ", pub_date.naive_local())?;
+            write!(out, "{}", format!("[{}] - ", pub_date.naive_local()).bold())?;
         }
-        writeln!(out, "{}", self.chan_title)?;
+        // Channel title
+        writeln!(out, "{}", self.chan_title.bright_green().underline())?;
+        // Title
         if let Some(title) = &self.title && !self.conf.hide_title {
             writeln!(out, "{}", textwrap::fill(title, &*WRAP_OPTIONS))?;
         }
+        // Author
         if let Some(author) = &self.author && !self.conf.hide_author {
             writeln!(out, " - {}", author)?;
         }
+        // Description
         if let Some(desc) = &self.description && !self.conf.hide_description {
             writeln!(out, "{}", textwrap::fill(desc, &*WRAP_OPTIONS))?;
         }
+        // Enclosure
         if let Some(enclosure_url) = &self.enclosure_url && self.conf.show_enclosure {
             writeln!(out, "[{}]", enclosure_url)?;
         }
+        // Link
         if let Some(link) = &self.link && !self.conf.hide_link {
-            write!(out, "[{}]", link)?;
+            writeln!(out, "[{}]", link.bright_blue())?;
         }
         Ok(out)
     }
