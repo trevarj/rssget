@@ -14,6 +14,7 @@ repository = "https://github.com/trevarj/rssget"
 argh = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
 colored = "2.0"
+indicatif = "0.17"
 dirs = "4.0"
 rss = { version = "2.0", default-features = false }
 serde = { version = "1", features = ["derive"] }

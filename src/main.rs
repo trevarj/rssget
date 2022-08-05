@@ -7,6 +7,7 @@ use std::io::{BufReader, ErrorKind};
 use std::sync::LazyLock;
 
 use chrono::{DateTime, FixedOffset};
+use indicatif::{ProgressBar, ProgressStyle};
 use rss::{Channel, Item};
 use textwrap::Options;
 
@@ -120,34 +121,52 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     config.validate()?;
 
+    let progress_bar = ProgressBar::new(config.channels.len().try_into()?);
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "Fetching RSS… [{bar:40.green/white}] {pos:>2}/{len:2} {msg:.green}",
+        )
+        .unwrap()
+        .progress_chars("==>~"),
+    );
+
     // call out to all rss feeds
     let http = ureq::agent();
 
     let mut items = config
         .channels
         .iter()
-        .flat_map(|conf| match http.get(&conf.url).call() {
-            Ok(res) => match Channel::read_from(BufReader::new(res.into_reader())) {
-                Ok(chan) => chan
-                    .items
-                    .into_iter()
-                    .take(conf.max_items.unwrap_or(usize::MAX))
-                    .map(|item| {
-                        DisplayItem::new(item, &chan.title, &conf.item_config.unwrap_or_default())
-                    })
-                    .collect(),
+        .flat_map(|conf| {
+            progress_bar.set_message(conf.url.clone());
+            let items = match http.get(&conf.url).call() {
+                Ok(res) => match Channel::read_from(BufReader::new(res.into_reader())) {
+                    Ok(chan) => chan
+                        .items
+                        .into_iter()
+                        .take(conf.max_items.unwrap_or(usize::MAX))
+                        .map(|item| {
+                            DisplayItem::new(
+                                item,
+                                &chan.title,
+                                &conf.item_config.unwrap_or_default(),
+                            )
+                        })
+                        .collect(),
+                    Err(err) => {
+                        eprintln!(
+                            "Could not parse rss response from chan {}: {}",
+                            conf.url, err
+                        );
+                        vec![]
+                    }
+                },
                 Err(err) => {
-                    eprintln!(
-                        "Could not parse rss response from chan {}: {}",
-                        conf.url, err
-                    );
+                    eprintln!("Could not reach {}: {}", conf.url, err);
                     vec![]
                 }
-            },
-            Err(err) => {
-                eprintln!("Could not reach {}: {}", conf.url, err);
-                vec![]
-            }
+            };
+            progress_bar.inc(1);
+            items
         })
         .collect::<Vec<DisplayItem>>();
 
