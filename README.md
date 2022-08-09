@@ -1,5 +1,5 @@
 # rssget
-![Crates.io](https://img.shields.io/crates/v/rssget?style=flat-square)
+[![Crates.io](https://img.shields.io/crates/v/rssget?style=flat-square)](https://crates.io/crates/rssget)
 
 A simple tool to read RSS from the terminal. Load it up with feeds and waste all your time!
 
