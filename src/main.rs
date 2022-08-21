@@ -7,6 +7,7 @@ use std::io::{BufReader, ErrorKind};
 use std::sync::LazyLock;
 
 use chrono::{DateTime, FixedOffset};
+use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use rss::{Channel, Item};
 use textwrap::Options;
@@ -132,12 +133,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // call out to all rss feeds
     let http = ureq::agent();
-
+    let mut errors = vec![];
     let mut items = config
         .channels
         .iter()
         .flat_map(|conf| {
-            progress_bar.set_message(conf.url.clone());
+            progress_bar.set_message(
+                conf.alias
+                    .clone()
+                    .unwrap_or_else(|| format!("{:.20}", conf.url)),
+            );
             let items = match http.get(&conf.url).call() {
                 Ok(res) => match Channel::read_from(BufReader::new(res.into_reader())) {
                     Ok(chan) => chan
@@ -153,15 +158,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                         })
                         .collect(),
                     Err(err) => {
-                        eprintln!(
-                            "Could not parse rss response from chan {}: {}",
-                            conf.url, err
+                        errors.push(
+                            format!("Could not parse rss response from chan: [{}]", err).red(),
                         );
                         vec![]
                     }
                 },
                 Err(err) => {
-                    eprintln!("Could not reach {}: {}", conf.url, err);
+                    errors.push(format!("Could not reach rss: [{}]", err).red());
                     vec![]
                 }
             };
@@ -184,5 +188,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(output) => println!("{}", output),
         Err(err) => eprintln!("Could not format RSS Item: {}", err),
     });
+    errors.iter().for_each(|e| eprintln!("{}", e));
+
     Ok(())
 }
