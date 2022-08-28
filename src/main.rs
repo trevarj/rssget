@@ -4,11 +4,12 @@ use std::error::Error;
 use std::fmt::Write;
 use std::fs::OpenOptions;
 use std::io::{BufReader, ErrorKind};
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock, RwLock};
 
 use chrono::{DateTime, FixedOffset};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use rss::{Channel, Item};
 use textwrap::Options;
 
@@ -133,10 +134,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // call out to all rss feeds
     let http = ureq::agent();
-    let mut errors = vec![];
+    let errors = Arc::new(RwLock::new(vec![]));
     let mut items = config
         .channels
-        .iter()
+        .par_iter()
         .flat_map(|conf| {
             progress_bar.set_message(
                 conf.alias
@@ -145,7 +146,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             );
             let items = match http.get(&conf.url).call() {
                 Ok(res) => match Channel::read_from(BufReader::new(res.into_reader())) {
-                    Ok(chan) => chan
+                    Ok(chan) => Ok(chan
                         .items
                         .into_iter()
                         .take(conf.max_items.unwrap_or(usize::MAX))
@@ -156,21 +157,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 &conf.item_config.unwrap_or_default(),
                             )
                         })
-                        .collect(),
+                        .collect()),
                     Err(err) => {
-                        errors.push(
-                            format!("Could not parse rss response from chan: [{}]", err).red(),
-                        );
-                        vec![]
+                        Err(format!("Could not parse rss response from chan: [{}]", err).red())
                     }
                 },
-                Err(err) => {
-                    errors.push(format!("Could not reach rss: [{}]", err).red());
-                    vec![]
-                }
+                Err(err) => Err(format!("Could not reach rss: [{}]", err).red()),
             };
             progress_bar.inc(1);
-            items
+
+            match items {
+                Ok(items) => items,
+                Err(e) => {
+                    errors.write().unwrap().push(e);
+                    vec![]
+                }
+            }
         })
         .collect::<Vec<DisplayItem>>();
 
@@ -188,7 +190,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(output) => println!("{}", output),
         Err(err) => eprintln!("Could not format RSS Item: {}", err),
     });
-    errors.iter().for_each(|e| eprintln!("{}", e));
+    errors
+        .read()
+        .unwrap()
+        .iter()
+        .for_each(|e| eprintln!("{}", e));
 
     Ok(())
 }
