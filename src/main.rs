@@ -1,5 +1,6 @@
 #![feature(iterator_try_collect)]
 #![feature(once_cell)]
+#![feature(let_chains)]
 use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt::Write;
