@@ -1,5 +1,6 @@
 #![feature(iterator_try_collect)]
 #![feature(once_cell)]
+use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt::Write;
 use std::fs::OpenOptions;
@@ -25,7 +26,7 @@ static WRAP_OPTIONS: LazyLock<Options> = LazyLock::new(|| {
         .subsequent_indent("     ")
 });
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct DisplayItem {
     /// Channel name/title
     pub chan_title: String,
@@ -96,6 +97,18 @@ impl DisplayItem {
     }
 }
 
+impl Ord for DisplayItem {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.pub_date.cmp(&other.pub_date)
+    }
+}
+
+impl PartialOrd for DisplayItem {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     // get cli flags
     let args: Config = argh::from_env();
@@ -149,7 +162,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     Ok(chan) => Ok(chan
                         .items
                         .into_iter()
-                        .take(conf.max_items.unwrap_or(usize::MAX))
                         .map(|item| {
                             DisplayItem::new(
                                 item,
@@ -157,7 +169,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 &conf.item_config.unwrap_or_default(),
                             )
                         })
-                        .collect()),
+                        .collect::<BinaryHeap<DisplayItem>>()),
                     Err(err) => {
                         Err(format!("Could not parse rss response from chan: [{}]", err).red())
                     }
@@ -167,7 +179,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             progress_bar.inc(1);
 
             match items {
-                Ok(items) => items,
+                Ok(mut items) => items
+                    .drain()
+                    .take(conf.max_items.unwrap_or(usize::MAX))
+                    .collect(),
                 Err(e) => {
                     errors.write().unwrap().push(e);
                     vec![]

@@ -83,7 +83,7 @@ impl FromStr for ChanConfig {
 }
 
 /// Toggles for displaying Item fields
-#[derive(Debug, Default, Deserialize, Clone, Copy)]
+#[derive(Debug, Default, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct ItemConfig {
     #[serde(default)]
     pub hide_title: bool,
