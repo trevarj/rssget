@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             d
         })
         .expect("could not determine system config directory");
-    let config = match OpenOptions::new().read(true).open(&config) {
+    let config = match OpenOptions::new().read(true).open(config) {
         Ok(file) => {
             // parse config file
             let config_file: Config = serde_yaml::from_reader(&file)?;
@@ -192,6 +192,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<DisplayItem>>();
 
+    errors
+        .read()
+        .unwrap()
+        .iter()
+        .for_each(|e| eprintln!("{}", e));
+
     if items.is_empty() {
         eprintln!("No RSS items found.");
         return Ok(());
@@ -206,11 +212,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(output) => println!("{}", output),
         Err(err) => eprintln!("Could not format RSS Item: {}", err),
     });
-    errors
-        .read()
-        .unwrap()
-        .iter()
-        .for_each(|e| eprintln!("{}", e));
 
     Ok(())
 }
