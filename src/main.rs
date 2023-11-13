@@ -1,5 +1,5 @@
 #![feature(iterator_try_collect)]
-#![feature(once_cell)]
+#![feature(lazy_cell)]
 #![feature(let_chains)]
 use std::collections::BinaryHeap;
 use std::error::Error;
@@ -30,21 +30,21 @@ static WRAP_OPTIONS: LazyLock<Options> = LazyLock::new(|| {
 #[derive(Debug, PartialEq, Eq)]
 struct DisplayItem {
     /// Channel name/title
-    pub chan_title: String,
+    chan_title: String,
     /// Item config
-    pub conf: ItemConfig,
+    conf: ItemConfig,
     /// The title of the item.
-    pub title: Option<String>,
+    title: Option<String>,
     /// The URL of the item.
-    pub link: Option<String>,
+    link: Option<String>,
     /// The item synopsis.
-    pub description: Option<String>,
+    description: Option<String>,
     /// The email address of author of the item.
-    pub author: Option<String>,
+    author: Option<String>,
     /// The date the item was published as an RFC 2822 timestamp.
-    pub pub_date: Option<DateTime<FixedOffset>>,
+    pub_date: Option<DateTime<FixedOffset>>,
     /// The description of a media object that is attached to the item.
-    pub enclosure_url: Option<String>,
+    enclosure_url: Option<String>,
 }
 
 impl DisplayItem {
@@ -69,29 +69,41 @@ impl DisplayItem {
         use colored::*;
         let mut out = String::new();
         // Datetime
-        if let Some(pub_date) = self.pub_date && !self.conf.hide_pub_date {
+        if let Some(pub_date) = self.pub_date
+            && !self.conf.hide_pub_date
+        {
             write!(out, "{}", format!("[{}] - ", pub_date.naive_local()).bold())?;
         }
         // Channel title
         writeln!(out, "{}", self.chan_title.bright_green().underline())?;
         // Title
-        if let Some(title) = &self.title && !self.conf.hide_title {
+        if let Some(title) = &self.title
+            && !self.conf.hide_title
+        {
             writeln!(out, "{}", textwrap::fill(title, &*WRAP_OPTIONS))?;
         }
         // Author
-        if let Some(author) = &self.author && !self.conf.hide_author {
+        if let Some(author) = &self.author
+            && !self.conf.hide_author
+        {
             writeln!(out, " - {}", author)?;
         }
         // Description
-        if let Some(desc) = &self.description && !self.conf.hide_description {
+        if let Some(desc) = &self.description
+            && !self.conf.hide_description
+        {
             writeln!(out, "{}", textwrap::fill(desc, &*WRAP_OPTIONS))?;
         }
         // Enclosure
-        if let Some(enclosure_url) = &self.enclosure_url && self.conf.show_enclosure {
+        if let Some(enclosure_url) = &self.enclosure_url
+            && self.conf.show_enclosure
+        {
             writeln!(out, "[{}]", enclosure_url)?;
         }
         // Link
-        if let Some(link) = &self.link && !self.conf.hide_link {
+        if let Some(link) = &self.link
+            && !self.conf.hide_link
+        {
             writeln!(out, "[{}]", link.bright_blue())?;
         }
         Ok(out)

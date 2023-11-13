@@ -7,6 +7,7 @@ description = "A tool to get RSS feeds"
 keywords = ["rss", "cli", "util"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/trevarj/rssget"
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,3 +23,4 @@ serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 textwrap = { version = "0.15", features = ["terminal_size"] }
 ureq = "2.5"
+
